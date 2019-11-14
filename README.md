@@ -6,15 +6,15 @@ Both the simple and complex cases are considered.
 
 ## Usage
 
-Clone the repository:
+Clone repository:
 
-`git clone https://github.com/jacklowe/drone`
+`git clone https://github.com/jacklowe/drone.git`
 
 Navigate to directory:
 
 `cd drone`
 
-Run file:
+Run program:
 
 `node drone.js`
 
