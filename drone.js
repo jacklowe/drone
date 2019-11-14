@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 class Drone {
   constructor() {
     this.coords = [0, 0];
@@ -5,54 +7,96 @@ class Drone {
   }
 
   navigate(directions) {
-    // the individual turns and steps are seperated by spaces
+    // the individual steps, e.g. "R+", are seperated by spaces
     directions = directions.split(" ");
 
-    for (let step of directions) this.move(step);
+    for (let step of directions) {
+      this.move(step);
+    }
 
     return this.coords;
   }
 
   move(direction) {
-    // first we turn
-    if (direction[0] === "R") {
-      this.facing += Math.PI * 0.5;
-    } else {
-      this.facing -= Math.PI * 0.5;
-    }
+    // turn the drone
+    this.turn(direction[0]);
 
-    // then we calculate how many steps we take
+    // calculate how many steps we take
     const numSteps = this.countSteps(direction);
 
-    // now we update the coordinates by
-    // doing some trigonometry with numsteps
-    // and coords and facing.
-  }
-
-  countSteps(direction) {
-    let numSteps = 0;
-
-    // nb: we want to omit the first character as
-    // that is the direction to turn in
-    for (let i = 1; i < direction.length; i++) {
-      if (direction[i] === "+") numSteps++;
-      else numSteps--;
+    // some trigonometry to amend x and y coords
+    if (direction[0] === "R" || direction[0] === "L") {
+      this.coords[0] += numSteps * Math.round(Math.sin(this.facing));
+      this.coords[1] += numSteps * Math.round(Math.cos(this.facing));
     }
 
+    // translations in cardinal direction for complex case
+    this.translate(direction[0], numSteps);
+  }
+
+  turn(direction) {
+    if (direction === "R") {
+      this.facing += Math.PI * 0.5;
+    }
+    if (direction === "L") {
+      this.facing -= Math.PI * 0.5;
+    }
+  }
+
+  translate(direction, numSteps) {
+    // method for translation in complex case
+    switch (direction) {
+      case "N":
+        this.coords[1] += numSteps;
+        break;
+      case "E":
+        this.coords[0] += numSteps;
+        break;
+      case "S":
+        this.coords[1] -= numSteps;
+        break;
+      case "W":
+        this.coords[0] -= numSteps;
+        break;
+    }
+  }
+
+  countSteps(steps) {
+    let numSteps = 0;
+
+    for (let i = 1; i < steps.length; i++) {
+      if (steps[i] === "+") {
+        numSteps++;
+      } else {
+        numSteps--;
+      }
+    }
     return numSteps;
   }
 }
 
-const main = () => {
+function navigateDrone(directions) {
   let drone = new Drone();
 
-  // read input from filesystem
-  // and convert to string
-  // just hardcode for now
-  let directions = "R+ L-- R+ R-- L++";
-
   const coords = drone.navigate(directions);
-  console.log(coords);
-};
+
+  return coords;
+}
+
+function main() {
+  const simpleDirections = fs
+    .readFileSync("problem-basic-input.txt")
+    .toString();
+  const complexDirections = fs
+    .readFileSync("problem-complex-input.txt")
+    .toString();
+
+  const simpleCoords = navigateDrone(simpleDirections);
+  const complexCoords = navigateDrone(complexDirections);
+
+  // log coordinates to console
+  console.log(`Simple case: ${simpleCoords}`);
+  console.log(`Complex case: ${complexCoords}`);
+}
 
 main();
